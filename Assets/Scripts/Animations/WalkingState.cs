@@ -18,5 +18,6 @@ public class WalkingState : IAnimState
         {
             player.SwitchState(new IdleState(), player.IsWalkingHash, false);
         }
+
     }
 }

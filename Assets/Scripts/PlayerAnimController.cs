@@ -19,6 +19,8 @@ public class PlayerAnimController : MonoBehaviour
 
     [Header("Getter and Setters")]
     //Getters - Setters
+    public Animator Animator { get => _animator; set => _animator = value; }
+
     public int IsWalkingHash { get => _isWalkingHash; set => _isWalkingHash = value; }
     public int IsStandCoveringHash { get => _isStandCoveringHash; set => _isStandCoveringHash = value; }
     public int IsCrouchCoveringHash { get => _isCrouchCoveringHash; set => _isCrouchCoveringHash = value; }

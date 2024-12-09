@@ -17,7 +17,11 @@ public class IdleState : IAnimState
         if (player.IsWalking)
         {
             player.SwitchState(new WalkingState(), player.IsWalkingHash, true);
-
         }
+        else if (player.IsCrouchCovering)
+        {
+            player.SwitchState(new CoverCrouchingState(), player.IsCrouchCoveringHash, true);
+        }
+
     }
 }

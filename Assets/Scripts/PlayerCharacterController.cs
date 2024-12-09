@@ -5,7 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(CapsuleCollider))]
 public class PlayerCharacterController : MonoBehaviour
 {
+    public static PlayerCharacterController Instance { get; private set; }
 
+    [Header("Test Variables")]
     RaycastHit hitStand;
     RaycastHit hitCrouch;
 
@@ -30,6 +32,25 @@ public class PlayerCharacterController : MonoBehaviour
     private bool _canTakeCrouchCover;
     private bool _canTakeStandingCover;
 
+    [Header("Getters and Setters")]
+    public bool CanTakeCrouchCover { get => _canTakeCrouchCover; set => _canTakeCrouchCover = value; }
+    public bool CanTakeStandingCover { get => _canTakeStandingCover; set => _canTakeStandingCover = value; }
+
+    private void Awake()
+    {
+        #region SingletonPattern
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        #endregion
+
+    }
+
+
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
@@ -41,15 +62,30 @@ public class PlayerCharacterController : MonoBehaviour
 
     void Update()
     {
+        if (_playerAnimController.IsCrouchCovering)
+        {
+            //Vector3 _surfaceSlope = Quaternion.Euler(hitCrouch.normal).eulerAngles;
 
+            Vector3 surfaceNormal = hitCrouch.normal;
+
+            // Karakterin sýrtýný normale hizalamak için hedef dönüþü hesapla
+            Quaternion targetRotation = Quaternion.LookRotation(-surfaceNormal);
+
+            // Y ekseninde 180 derece ekle
+            targetRotation *= Quaternion.Euler(0, 180, 0);
+
+            // Karakteri yavaþça hedef dönüþe çevir
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f);
+            //transform.position = Vector3.Slerp(transform.position, hitCrouch.point, Time.deltaTime);
+
+            //transform.rotation = Quaternion.Slerp(transform.rotation, _surfaceSlope, Time.deltaTime);
+        }
     }
 
     private void FixedUpdate()
     {
         HandleMovement();
         //HandleGroundCheck();
-        HandleCrouchingCoverRay();
-        HandleStandingCoverRay();
     }
 
     private void HandleMovement()
@@ -60,7 +96,7 @@ public class PlayerCharacterController : MonoBehaviour
         _playerAnimController.IsWalking = _rb.linearVelocity != Vector3.zero ? true : false;
     }
 
-    private void HandleCrouchingCoverRay()
+    public void HandleCrouchingCoverRay()
     {
         Ray ray = new Ray(transform.position + _verticalCrouchingCoverOffsetVector, transform.forward);
         Debug.DrawRay(ray.origin, ray.direction, Color.blue);
@@ -70,11 +106,12 @@ public class PlayerCharacterController : MonoBehaviour
             {
                 Debug.Log("Crouching Cover Object Found: " + hitCrouch.collider.name);
                 _canTakeCrouchCover = true;
+                _playerAnimController.IsCrouchCovering = true;
             }
         }
     }
 
-    private void HandleStandingCoverRay()
+    public void HandleStandingCoverRay()
     {
         Ray ray = new Ray(transform.position + _verticalStandingCoverOffsetVector, transform.forward);
         Debug.DrawRay(ray.origin, ray.direction, Color.red);
@@ -84,6 +121,7 @@ public class PlayerCharacterController : MonoBehaviour
             {
                 Debug.Log("Standing Cover Object Found: " + hitStand.collider.name);
                 _canTakeStandingCover = true;
+                _playerAnimController.IsStandCovering = true;
             }
         }
     }

@@ -12,8 +12,7 @@ public class InputManager : MonoBehaviour
     private Vector2 _playerMovementInput;
     private Vector3 _playerMovementVector;
 
-
-    //Getters - Setters
+    [Header("Getters and Setters")]
     public Vector3 PlayerMovementVector { get => _playerMovementVector; }
 
     private void Awake()
@@ -37,17 +36,28 @@ public class InputManager : MonoBehaviour
         _playerInput.Movement.Move.started += GetMovementInputVector;
         _playerInput.Movement.Move.performed += GetMovementInputVector;
         _playerInput.Movement.Move.canceled += GetMovementInputVector;
+        _playerInput.Interactions.Cover.performed += GetCoverKeyPress;
     }
 
 
     void Update()
     {
+
     }
 
     void GetMovementInputVector(InputAction.CallbackContext callback)
     {
         _playerMovementInput = callback.ReadValue<Vector2>();
         _playerMovementVector = new Vector3(_playerMovementInput.x, 0f, _playerMovementInput.y);
+    }
+
+    void GetCoverKeyPress(InputAction.CallbackContext callback)
+    {
+        PlayerCharacterController.Instance.HandleCrouchingCoverRay();
+        if (!PlayerCharacterController.Instance.CanTakeCrouchCover)
+        {
+            PlayerCharacterController.Instance.HandleStandingCoverRay();
+        }
     }
 
     void OnInputEnable()
@@ -58,6 +68,10 @@ public class InputManager : MonoBehaviour
     void OnInputDisable()
     {
         _playerInput.Disable();
+        _playerInput.Movement.Move.started -= GetMovementInputVector;
+        _playerInput.Movement.Move.performed -= GetMovementInputVector;
+        _playerInput.Movement.Move.canceled -= GetMovementInputVector;
+        _playerInput.Interactions.Cover.performed -= GetCoverKeyPress;
     }
 
 }
