@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CoverStandingState : MonoBehaviour, IAnimState
+public class CoverStandingState : IAnimState
 {
     public void EnterState(PlayerAnimController player)
     {

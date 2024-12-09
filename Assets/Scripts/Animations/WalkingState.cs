@@ -1,19 +1,22 @@
 using UnityEngine;
 
-public class WalkingState : MonoBehaviour, IAnimState
+public class WalkingState : IAnimState
 {
     public void EnterState(PlayerAnimController player)
     {
-        throw new System.NotImplementedException();
+
     }
 
     public void ExitState(PlayerAnimController player)
     {
-        throw new System.NotImplementedException();
+        player.IsWalking = false;
     }
 
     public void UpdateState(PlayerAnimController player)
     {
-        throw new System.NotImplementedException();
+        if (!player.IsWalking)
+        {
+            player.SwitchState(new IdleState(), player.IsWalkingHash, false);
+        }
     }
 }
