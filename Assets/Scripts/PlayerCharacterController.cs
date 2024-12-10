@@ -64,19 +64,20 @@ public class PlayerCharacterController : MonoBehaviour
     {
         if (_playerAnimController.IsCrouchCovering)
         {
-            //Vector3 _surfaceSlope = Quaternion.Euler(hitCrouch.normal).eulerAngles;
+            ////Vector3 _surfaceSlope = Quaternion.Euler(hitCrouch.normal).eulerAngles;
 
-            Vector3 surfaceNormal = hitCrouch.normal;
+            //Vector3 surfaceNormal = hitCrouch.normal;
 
-            // Karakterin sýrtýný normale hizalamak için hedef dönüþü hesapla
-            Quaternion targetRotation = Quaternion.LookRotation(-surfaceNormal);
+            //// Karakterin sýrtýný normale hizalamak için hedef dönüþü hesapla
+            //Quaternion targetRotation = Quaternion.LookRotation(-surfaceNormal);
 
-            // Y ekseninde 180 derece ekle
-            targetRotation *= Quaternion.Euler(0, 180, 0);
+            //// Y ekseninde 180 derece ekle
+            //targetRotation *= Quaternion.Euler(0, 180, 0);
 
-            // Karakteri yavaþça hedef dönüþe çevir
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f);
-            //transform.position = Vector3.Slerp(transform.position, hitCrouch.point, Time.deltaTime);
+            //// Karakteri yavaþça hedef dönüþe çevir
+            //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f);
+            ////transform.position = Vector3.Slerp(transform.position, hitCrouch.point, Time.deltaTime);
+            //Quaternion.LookRotation(hitCrouch.point);
 
             //transform.rotation = Quaternion.Slerp(transform.rotation, _surfaceSlope, Time.deltaTime);
         }
@@ -104,7 +105,34 @@ public class PlayerCharacterController : MonoBehaviour
         {
             if (hitCrouch.collider != null)
             {
-                Debug.Log("Crouching Cover Object Found: " + hitCrouch.collider.name);
+                Vector3 surfaceNormal = hitCrouch.normal;
+
+                // Normali bir Quaternion dönüþüne çevir
+                Quaternion normalRotation = Quaternion.LookRotation(surfaceNormal);
+
+                // Euler açýlarýný al
+                Vector3 eulerAngles = normalRotation.eulerAngles;
+
+                Debug.Log($"Normale göre Euler açýlarý: {eulerAngles}");
+
+                float _characterAnimTurn = 145f;
+
+                if (eulerAngles.y > 180)
+                {
+                    float a = 360 - eulerAngles.y;
+                    float b = 180 - a;
+                    float c = b - _characterAnimTurn;
+                    _playerAnimController.Animator.SetBool(_playerAnimController.IsMirroredHash, true);
+                    Debug.Log("mirror var, if condition, dönmesi gereken: " + c);
+                }
+                else
+                {
+                    float a = 180 - eulerAngles.y;
+                    float b = _characterAnimTurn - a;
+                    _playerAnimController.Animator.SetBool(_playerAnimController.IsMirroredHash, false);
+                    Debug.Log("mirror yok, else condition, dönmesi gereken: " + b);
+                }
+
                 _canTakeCrouchCover = true;
                 _playerAnimController.IsCrouchCovering = true;
             }

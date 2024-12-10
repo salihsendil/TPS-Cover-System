@@ -10,11 +10,13 @@ public class PlayerAnimController : MonoBehaviour
     private int _isWalkingHash;
     private int _isStandCoveringHash;
     private int _isCrouchCoveringHash;
+    private int _isMirroredHash;
 
     [Header("Player Current State Variables")]
     private bool _isWalking;
     private bool _isStandCovering;
     private bool _isCrouchCovering;
+    private bool _isMirrored;
 
 
     [Header("Getter and Setters")]
@@ -24,10 +26,14 @@ public class PlayerAnimController : MonoBehaviour
     public int IsWalkingHash { get => _isWalkingHash; set => _isWalkingHash = value; }
     public int IsStandCoveringHash { get => _isStandCoveringHash; set => _isStandCoveringHash = value; }
     public int IsCrouchCoveringHash { get => _isCrouchCoveringHash; set => _isCrouchCoveringHash = value; }
+    public int IsMirroredHash { get => _isMirroredHash; set => _isMirroredHash = value; }
 
     public bool IsWalking { get => _isWalking; set => _isWalking = value; }
     public bool IsStandCovering { get => _isStandCovering; set => _isStandCovering = value; }
     public bool IsCrouchCovering { get => _isCrouchCovering; set => _isCrouchCovering = value; }
+    public bool IsMirrored { get => _isMirrored; set => _isMirrored = value; }
+
+    public IAnimState CurrentState { get => _currentState; }
 
     private void Awake()
     {
@@ -35,6 +41,7 @@ public class PlayerAnimController : MonoBehaviour
         _isWalkingHash = Animator.StringToHash("isWalking");
         _isStandCoveringHash = Animator.StringToHash("isStandCovering");
         _isCrouchCoveringHash = Animator.StringToHash("isCrouchCovering");
+        _isMirroredHash = Animator.StringToHash("isMirrored");
     }
     void Start()
     {

@@ -6,6 +6,9 @@ public class CoverCrouchingState : IAnimState
     {
         player.IsCrouchCovering = true;
         player.Animator.SetBool(player.IsCrouchCoveringHash, true);
+
+        player.GetComponent<CapsuleCollider>().center = new Vector3(0f, 0.7f, 0f);
+        player.GetComponent<CapsuleCollider>().height = 1.4f;
     }
 
     public void ExitState(PlayerAnimController player)
@@ -16,6 +19,6 @@ public class CoverCrouchingState : IAnimState
 
     public void UpdateState(PlayerAnimController player)
     {
-        
+
     }
 }
