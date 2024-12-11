@@ -61,4 +61,11 @@ public class PlayerAnimController : MonoBehaviour
         _animator.SetBool(stateHash, stateSituation);
         _currentState.EnterState(this);
     }
+
+    public void UpdateAnimationMirrorState(float angle)
+    {
+        _isMirrored = angle > 180;
+        _animator.SetBool(IsMirroredHash, IsMirrored);
+    }
+
 }

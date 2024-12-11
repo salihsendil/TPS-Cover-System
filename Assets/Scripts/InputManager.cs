@@ -53,10 +53,10 @@ public class InputManager : MonoBehaviour
 
     void GetCoverKeyPress(InputAction.CallbackContext callback)
     {
-        PlayerCharacterController.Instance.HandleCrouchingCoverRay();
-        if (!PlayerCharacterController.Instance.CanTakeCrouchCover)
+        PlayerCharacterController.Instance.HandleStandingCoverRay();
+        if (!PlayerCharacterController.Instance.CanTakeStandingCover)
         {
-            PlayerCharacterController.Instance.HandleStandingCoverRay();
+            PlayerCharacterController.Instance.HandleCrouchingCoverRay();
         }
     }
 

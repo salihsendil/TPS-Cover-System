@@ -21,7 +21,9 @@ public class PlayerCharacterController : MonoBehaviour
     [SerializeField] private float _speed = 1.8f;
 
     [Header("Cover System Variables")]
-    private float _rayLength = 2.5f;
+    private float _rayLength = 1.5f;
+    private float _coverRotationTolerance = 7.5f;
+    private Vector3 _coverRotationEulerAngles;
 
     private float _verticalStandingCoverOffsetY = 1.5f;
     private Vector3 _verticalStandingCoverOffsetVector;
@@ -31,6 +33,7 @@ public class PlayerCharacterController : MonoBehaviour
 
     private bool _canTakeCrouchCover;
     private bool _canTakeStandingCover;
+
 
     [Header("Getters and Setters")]
     public bool CanTakeCrouchCover { get => _canTakeCrouchCover; set => _canTakeCrouchCover = value; }
@@ -62,31 +65,22 @@ public class PlayerCharacterController : MonoBehaviour
 
     void Update()
     {
-        if (_playerAnimController.IsCrouchCovering)
+        if (_canTakeStandingCover || _canTakeCrouchCover)
         {
-            ////Vector3 _surfaceSlope = Quaternion.Euler(hitCrouch.normal).eulerAngles;
+            Vector3 targetPos = new Vector3(hitCrouch.point.x, transform.position.y, hitCrouch.point.z - GetComponent<CapsuleCollider>().radius / 2 - 0.2f);
+            transform.position = Vector3.Slerp(transform.position, targetPos, Time.deltaTime * 3f);
 
-            //Vector3 surfaceNormal = hitCrouch.normal;
+            _coverRotationEulerAngles = Quaternion.LookRotation(hitCrouch.normal).eulerAngles;
+            _coverRotationEulerAngles.y -= _coverRotationTolerance;
+            //transform.rotation = Quaternion.Euler(_coverRotationEulerAngles);
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(_coverRotationEulerAngles), Time.deltaTime * 3f);
 
-            //// Karakterin sýrtýný normale hizalamak için hedef dönüþü hesapla
-            //Quaternion targetRotation = Quaternion.LookRotation(-surfaceNormal);
-
-            //// Y ekseninde 180 derece ekle
-            //targetRotation *= Quaternion.Euler(0, 180, 0);
-
-            //// Karakteri yavaþça hedef dönüþe çevir
-            //transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f);
-            ////transform.position = Vector3.Slerp(transform.position, hitCrouch.point, Time.deltaTime);
-            //Quaternion.LookRotation(hitCrouch.point);
-
-            //transform.rotation = Quaternion.Slerp(transform.rotation, _surfaceSlope, Time.deltaTime);
         }
     }
 
     private void FixedUpdate()
     {
         HandleMovement();
-        //HandleGroundCheck();
     }
 
     private void HandleMovement()
@@ -100,38 +94,13 @@ public class PlayerCharacterController : MonoBehaviour
     public void HandleCrouchingCoverRay()
     {
         Ray ray = new Ray(transform.position + _verticalCrouchingCoverOffsetVector, transform.forward);
-        Debug.DrawRay(ray.origin, ray.direction, Color.blue);
+        Debug.DrawRay(ray.origin, ray.direction, Color.blue, 5f);
         if (Physics.Raycast(ray, out hitCrouch, _rayLength))
         {
             if (hitCrouch.collider != null)
             {
-                Vector3 surfaceNormal = hitCrouch.normal;
-
-                // Normali bir Quaternion dönüþüne çevir
-                Quaternion normalRotation = Quaternion.LookRotation(surfaceNormal);
-
-                // Euler açýlarýný al
-                Vector3 eulerAngles = normalRotation.eulerAngles;
-
-                Debug.Log($"Normale göre Euler açýlarý: {eulerAngles}");
-
-                float _characterAnimTurn = 145f;
-
-                if (eulerAngles.y > 180)
-                {
-                    float a = 360 - eulerAngles.y;
-                    float b = 180 - a;
-                    float c = b - _characterAnimTurn;
-                    _playerAnimController.Animator.SetBool(_playerAnimController.IsMirroredHash, true);
-                    Debug.Log("mirror var, if condition, dönmesi gereken: " + c);
-                }
-                else
-                {
-                    float a = 180 - eulerAngles.y;
-                    float b = _characterAnimTurn - a;
-                    _playerAnimController.Animator.SetBool(_playerAnimController.IsMirroredHash, false);
-                    Debug.Log("mirror yok, else condition, dönmesi gereken: " + b);
-                }
+                //ApplyRotationToCoverState(CalculateRotationForCovering(hitCrouch.normal));
+                //_playerAnimController.UpdateAnimationMirrorState(_coverRotationEulerAngles.y);
 
                 _canTakeCrouchCover = true;
                 _playerAnimController.IsCrouchCovering = true;
@@ -139,51 +108,50 @@ public class PlayerCharacterController : MonoBehaviour
         }
     }
 
+
     public void HandleStandingCoverRay()
     {
         Ray ray = new Ray(transform.position + _verticalStandingCoverOffsetVector, transform.forward);
-        Debug.DrawRay(ray.origin, ray.direction, Color.red);
+        Debug.DrawRay(ray.origin, ray.direction, Color.red, 5f);
         if (Physics.Raycast(ray, out hitStand, _rayLength))
         {
             if (hitStand.collider != null)
             {
-                Debug.Log("Standing Cover Object Found: " + hitStand.collider.name);
+                //ApplyRotationToCoverState(CalculateRotationForCovering(hitStand.normal));
+                //_playerAnimController.UpdateAnimationMirrorState(_coverRotationEulerAngles.y);
+
                 _canTakeStandingCover = true;
                 _playerAnimController.IsStandCovering = true;
             }
         }
     }
+    private Quaternion CalculateRotationForCovering(Vector3 normal)
+    {
+
+        return Quaternion.LookRotation(normal);
+    }
+
+    private void ApplyRotationToCoverState(Quaternion targetRotation)
+    {
+        _coverRotationEulerAngles = targetRotation.eulerAngles;
+        _coverRotationEulerAngles.y -= _coverRotationTolerance;
+        //transform.rotation = Quaternion.Euler(_coverRotationEulerAngles);
+    }
 
     void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + transform.forward + _verticalStandingCoverOffsetVector, 0.1f);
+        Gizmos.color = Color.red;//Stand Cover Pos Ray Start Point
+        Gizmos.DrawWireSphere(transform.position + _verticalStandingCoverOffsetVector, 0.15f);
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + _verticalStandingCoverOffsetVector, 0.1f);
+        Gizmos.color = Color.blue;//Crouch Cover Pos Ray Start Point
+        Gizmos.DrawWireSphere(transform.position + _verticalCrouchingCoverOffsetVector, 0.15f);
 
+        Gizmos.color = Color.red;//Stand Cover Ray Hit Point
+        Gizmos.DrawWireCube(hitStand.point, Vector3.one * 0.1f);
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(hitStand.point, 0.1f);
-
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position + _verticalCrouchingCoverOffsetVector, 0.1f);
-        Gizmos.DrawWireSphere(transform.position + transform.forward + _verticalCrouchingCoverOffsetVector, 0.1f);
-
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(hitCrouch.point, 0.1f);
+        Gizmos.color = Color.blue;//Stand Cover Ray Hit Point
+        Gizmos.DrawWireCube(hitCrouch.point, Vector3.one * 0.1f);
 
     }
-
-    //private void HandleGroundCheck()
-    //{
-    //    Ray ray = new Ray(transform.position, Vector3.down);
-    //    RaycastHit hit;
-    //    if (Physics.Raycast(ray, out hit, 5f))
-    //    {
-    //        //Debug.Log("hit: " + hit.collider.name);
-    //    }
-    //    Debug.DrawRay(ray.origin, ray.direction, Color.red);
-    //}
 
 }

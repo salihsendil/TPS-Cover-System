@@ -9,7 +9,7 @@ public class WalkingState : IAnimState
 
     public void ExitState(PlayerAnimController player)
     {
-        player.IsWalking = false;
+
     }
 
     public void UpdateState(PlayerAnimController player)
@@ -18,6 +18,17 @@ public class WalkingState : IAnimState
         {
             player.SwitchState(new IdleState(), player.IsWalkingHash, false);
         }
+
+        else if (player.IsStandCovering)
+        {
+            player.SwitchState(new CoverStandingState(), player.IsStandCoveringHash, true);
+        }
+
+        else if (player.IsCrouchCovering)
+        {
+            player.SwitchState(new CoverCrouchingState(), player.IsCrouchCoveringHash, true);
+        }
+
 
     }
 }
