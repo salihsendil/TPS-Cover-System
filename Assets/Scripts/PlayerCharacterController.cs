@@ -11,9 +11,9 @@ public class PlayerCharacterController : MonoBehaviour
     RaycastHit hitStand;
     RaycastHit hitCrouch;
 
-
     [Header("References")]
     Rigidbody _rb;
+    CapsuleCollider _collider;
     PlayerAnimController _playerAnimController;
 
     [Header("Movement Variables")]
@@ -23,7 +23,10 @@ public class PlayerCharacterController : MonoBehaviour
     [Header("Cover System Variables")]
     private float _rayLength = 1.5f;
     private float _coverRotationTolerance = 7.5f;
+
     private Vector3 _coverRotationEulerAngles;
+    private Vector3 _coverTargetPosition;
+
 
     private float _verticalStandingCoverOffsetY = 1.5f;
     private Vector3 _verticalStandingCoverOffsetVector;
@@ -33,7 +36,7 @@ public class PlayerCharacterController : MonoBehaviour
 
     private bool _canTakeCrouchCover;
     private bool _canTakeStandingCover;
-
+    private bool _isInCover;
 
     [Header("Getters and Setters")]
     public bool CanTakeCrouchCover { get => _canTakeCrouchCover; set => _canTakeCrouchCover = value; }
@@ -50,37 +53,34 @@ public class PlayerCharacterController : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         #endregion
-
     }
-
 
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
+        _collider = GetComponent<CapsuleCollider>();
         _playerAnimController = GetComponent<PlayerAnimController>();
 
         _verticalStandingCoverOffsetVector = new Vector3(0f, _verticalStandingCoverOffsetY, 0f);
         _verticalCrouchingCoverOffsetVector = new Vector3(0f, _verticalCrouchingCoverOffsetY, 0f);
     }
 
-    void Update()
-    {
-        if (_canTakeStandingCover || _canTakeCrouchCover)
-        {
-            Vector3 targetPos = new Vector3(hitCrouch.point.x, transform.position.y, hitCrouch.point.z - GetComponent<CapsuleCollider>().radius / 2 - 0.2f);
-            transform.position = Vector3.Slerp(transform.position, targetPos, Time.deltaTime * 3f);
-
-            _coverRotationEulerAngles = Quaternion.LookRotation(hitCrouch.normal).eulerAngles;
-            _coverRotationEulerAngles.y -= _coverRotationTolerance;
-            //transform.rotation = Quaternion.Euler(_coverRotationEulerAngles);
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(_coverRotationEulerAngles), Time.deltaTime * 3f);
-
-        }
-    }
-
     private void FixedUpdate()
     {
         HandleMovement();
+
+        if (_canTakeStandingCover)
+        {
+            TakePlayerToCoverPos(hitStand);
+            _playerAnimController.IsStandCovering = true;
+        }
+
+        else if (_canTakeCrouchCover)
+        {
+            TakePlayerToCoverPos(hitCrouch);
+            _playerAnimController.IsCrouchCovering = true;
+        }
+
     }
 
     private void HandleMovement()
@@ -91,23 +91,20 @@ public class PlayerCharacterController : MonoBehaviour
         _playerAnimController.IsWalking = _rb.linearVelocity != Vector3.zero ? true : false;
     }
 
-    public void HandleCrouchingCoverRay()
+    public void CheckPlayerCoverSituation()
     {
-        Ray ray = new Ray(transform.position + _verticalCrouchingCoverOffsetVector, transform.forward);
-        Debug.DrawRay(ray.origin, ray.direction, Color.blue, 5f);
-        if (Physics.Raycast(ray, out hitCrouch, _rayLength))
-        {
-            if (hitCrouch.collider != null)
-            {
-                //ApplyRotationToCoverState(CalculateRotationForCovering(hitCrouch.normal));
-                //_playerAnimController.UpdateAnimationMirrorState(_coverRotationEulerAngles.y);
+        HandleStandingCoverRay();
 
-                _canTakeCrouchCover = true;
-                _playerAnimController.IsCrouchCovering = true;
-            }
+        if (!_canTakeStandingCover)
+        {
+            HandleCrouchingCoverRay();
+        }
+
+        if (_isInCover)
+        {
+            GettingOutFromCover(); //IT'S GONNA FIX
         }
     }
-
 
     public void HandleStandingCoverRay()
     {
@@ -115,19 +112,33 @@ public class PlayerCharacterController : MonoBehaviour
         Debug.DrawRay(ray.origin, ray.direction, Color.red, 5f);
         if (Physics.Raycast(ray, out hitStand, _rayLength))
         {
-            if (hitStand.collider != null)
-            {
-                //ApplyRotationToCoverState(CalculateRotationForCovering(hitStand.normal));
-                //_playerAnimController.UpdateAnimationMirrorState(_coverRotationEulerAngles.y);
-
-                _canTakeStandingCover = true;
-                _playerAnimController.IsStandCovering = true;
-            }
+            if (hitStand.collider == null) { return; }
+            _canTakeStandingCover = true;
         }
     }
+
+    public void HandleCrouchingCoverRay()
+    {
+        Ray ray = new Ray(transform.position + _verticalCrouchingCoverOffsetVector, transform.forward);
+        Debug.DrawRay(ray.origin, ray.direction, Color.blue, 5f);
+        if (Physics.Raycast(ray, out hitCrouch, _rayLength))
+        {
+            if (hitCrouch.collider == null) { return; }
+            _canTakeCrouchCover = true;
+        }
+    }
+
+    private void TakePlayerToCoverPos(RaycastHit hit)
+    {
+        _coverTargetPosition = new Vector3(hit.point.x, transform.position.y, hit.point.z - _collider.radius / 2 - 0.2f);
+        transform.position = Vector3.Slerp(transform.position, _coverTargetPosition, Time.deltaTime * 3f);
+        ApplyRotationToCoverState(CalculateRotationForCovering(hit.normal));
+
+        _isInCover = true;
+    }
+
     private Quaternion CalculateRotationForCovering(Vector3 normal)
     {
-
         return Quaternion.LookRotation(normal);
     }
 
@@ -135,7 +146,20 @@ public class PlayerCharacterController : MonoBehaviour
     {
         _coverRotationEulerAngles = targetRotation.eulerAngles;
         _coverRotationEulerAngles.y -= _coverRotationTolerance;
-        //transform.rotation = Quaternion.Euler(_coverRotationEulerAngles);
+        _playerAnimController.UpdateAnimationMirrorState(_coverRotationEulerAngles.y);
+        transform.rotation = Quaternion.Slerp(transform.rotation,
+                                              Quaternion.Euler(_coverRotationEulerAngles),
+                                              Time.deltaTime * 3f);
+    }
+
+    void GettingOutFromCover()
+    {
+        //this gonna fix
+        transform.position = Vector3.Slerp(transform.position, transform.position + transform.forward*3f, Time.deltaTime * 3f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(Vector3.zero), Time.deltaTime * 3f);
+        _isInCover = false;
+        _canTakeStandingCover = _canTakeCrouchCover = false;
+        _playerAnimController.IsStandCovering = _playerAnimController.IsCrouchCovering = false;
     }
 
     void OnDrawGizmos()

@@ -16,19 +16,19 @@ public class WalkingState : IAnimState
     {
         if (!player.IsWalking)
         {
+            player.VelocityX = 0f;
+            player.VelocityZ = 0f;
             player.SwitchState(new IdleState(), player.IsWalkingHash, false);
         }
 
-        else if (player.IsStandCovering)
+        if (player.IsStandCovering)
         {
             player.SwitchState(new CoverStandingState(), player.IsStandCoveringHash, true);
         }
 
-        else if (player.IsCrouchCovering)
+        if (player.IsCrouchCovering)
         {
             player.SwitchState(new CoverCrouchingState(), player.IsCrouchCoveringHash, true);
         }
-
-
     }
 }

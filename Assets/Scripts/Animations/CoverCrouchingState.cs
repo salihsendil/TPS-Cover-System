@@ -12,10 +12,17 @@ public class CoverCrouchingState : IAnimState
     {
         player.IsCrouchCovering = false;
         player.Animator.SetBool(player.IsCrouchCoveringHash, false);
+
+        player.GetComponent<CapsuleCollider>().center = new Vector3(0f, 0.95f, 0f);
+        player.GetComponent<CapsuleCollider>().height = 1.9f;
+
     }
 
     public void UpdateState(PlayerAnimController player)
     {
-
+        if (!player.IsCrouchCovering)
+        {
+            player.SwitchState(new IdleState(), player.IsCrouchCoveringHash, false);
+        }
     }
 }

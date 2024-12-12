@@ -14,6 +14,9 @@ public class CoverStandingState : IAnimState
 
     public void UpdateState(PlayerAnimController player)
     {
-
+        if (!player.IsStandCovering)
+        {
+            player.SwitchState(new IdleState(), player.IsStandCoveringHash, false);
+        }
     }
 }

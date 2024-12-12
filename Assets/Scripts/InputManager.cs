@@ -48,16 +48,12 @@ public class InputManager : MonoBehaviour
     void GetMovementInputVector(InputAction.CallbackContext callback)
     {
         _playerMovementInput = callback.ReadValue<Vector2>();
-        _playerMovementVector = new Vector3(_playerMovementInput.x, 0f, _playerMovementInput.y);
+        _playerMovementVector = new Vector3(_playerMovementInput.x, _playerMovementVector.y, _playerMovementInput.y);
     }
 
     void GetCoverKeyPress(InputAction.CallbackContext callback)
     {
-        PlayerCharacterController.Instance.HandleStandingCoverRay();
-        if (!PlayerCharacterController.Instance.CanTakeStandingCover)
-        {
-            PlayerCharacterController.Instance.HandleCrouchingCoverRay();
-        }
+        PlayerCharacterController.Instance.CheckPlayerCoverSituation();
     }
 
     void OnInputEnable()
