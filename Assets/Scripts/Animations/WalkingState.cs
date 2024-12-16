@@ -16,8 +16,6 @@ public class WalkingState : IAnimState
     {
         if (!player.IsWalking)
         {
-            player.VelocityX = 0f;
-            player.VelocityZ = 0f;
             player.SwitchState(new IdleState(), player.IsWalkingHash, false);
         }
 

@@ -36,6 +36,7 @@ public class InputManager : MonoBehaviour
         _playerInput.Movement.Move.started += GetMovementInputVector;
         _playerInput.Movement.Move.performed += GetMovementInputVector;
         _playerInput.Movement.Move.canceled += GetMovementInputVector;
+
         _playerInput.Interactions.Cover.performed += GetCoverKeyPress;
     }
 

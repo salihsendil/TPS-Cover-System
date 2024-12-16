@@ -17,8 +17,13 @@ public class PlayerCharacterController : MonoBehaviour
     PlayerAnimController _playerAnimController;
 
     [Header("Movement Variables")]
+    [SerializeField] private float _speed = 2f;
+    [SerializeField] private float _acceleration = 3.4f;
     private Vector3 _movementVector;
-    [SerializeField] private float _speed = 1.8f;
+
+    [Header("Rotation Variables")]
+    private Vector3 _cameraDirection;
+    [SerializeField] private float _rotatingSpeed = 5f;
 
     [Header("Cover System Variables")]
     private float _rayLength = 1.5f;
@@ -37,6 +42,7 @@ public class PlayerCharacterController : MonoBehaviour
     private bool _canTakeCrouchCover;
     private bool _canTakeStandingCover;
     private bool _isInCover;
+    private bool _canGetOutFromCover;
 
     [Header("Getters and Setters")]
     public bool CanTakeCrouchCover { get => _canTakeCrouchCover; set => _canTakeCrouchCover = value; }
@@ -67,7 +73,12 @@ public class PlayerCharacterController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (InputManager.Instance.PlayerMovementVector != Vector3.zero)
+        {
+            HandleRotation();
+        }
         HandleMovement();
+
 
         if (_canTakeStandingCover)
         {
@@ -81,15 +92,52 @@ public class PlayerCharacterController : MonoBehaviour
             _playerAnimController.IsCrouchCovering = true;
         }
 
+        if (!_isInCover && _canGetOutFromCover)
+        {
+            //GettingOutFromCover();
+        }
+
     }
+
+
 
     private void HandleMovement()
     {
-        _movementVector = InputManager.Instance.PlayerMovementVector * _speed;
-        _rb.linearVelocity = new Vector3(_movementVector.x, _rb.linearVelocity.y, _movementVector.z);
+        Vector3 _mainCamFwd = Camera.main.transform.forward;
+        Vector3 _mainCamRight = Camera.main.transform.right;
+
+        _mainCamFwd.y = _mainCamRight.y = 0f;
+
+        _mainCamFwd.Normalize();
+        _mainCamRight.Normalize();
+
+        _movementVector = InputManager.Instance.PlayerMovementVector.x * _mainCamRight + InputManager.Instance.PlayerMovementVector.z * _mainCamFwd;
+
+        Debug.Log($"Movement Vector before multiple: {_movementVector}");
+        Debug.Log($"ad pressed: {InputManager.Instance.PlayerMovementVector.x}");
+
+        _movementVector *= _speed;
+
+        if (_rb.linearVelocity.magnitude < _movementVector.magnitude)
+        {
+            _rb.linearVelocity += _movementVector * _acceleration * Time.deltaTime;
+        }
+
+        Debug.Log($"Velocity: {_rb.linearVelocity}");
 
         _playerAnimController.IsWalking = _rb.linearVelocity != Vector3.zero ? true : false;
     }
+
+    private void HandleRotation()
+    {
+        _cameraDirection = new Vector3(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z);
+        _cameraDirection.Normalize();
+
+        Quaternion _targetRot = Quaternion.LookRotation(_cameraDirection);
+        transform.rotation = Quaternion.Lerp(transform.rotation, _targetRot, 1f);
+    }
+
+
 
     public void CheckPlayerCoverSituation()
     {
@@ -102,7 +150,7 @@ public class PlayerCharacterController : MonoBehaviour
 
         if (_isInCover)
         {
-            GettingOutFromCover(); //IT'S GONNA FIX
+            _canGetOutFromCover = true;
         }
     }
 
@@ -131,8 +179,8 @@ public class PlayerCharacterController : MonoBehaviour
     private void TakePlayerToCoverPos(RaycastHit hit)
     {
         _coverTargetPosition = new Vector3(hit.point.x, transform.position.y, hit.point.z - _collider.radius / 2 - 0.2f);
-        transform.position = Vector3.Slerp(transform.position, _coverTargetPosition, Time.deltaTime * 3f);
         ApplyRotationToCoverState(CalculateRotationForCovering(hit.normal));
+        transform.position = Vector3.Slerp(transform.position, _coverTargetPosition, Time.deltaTime * 3f);
 
         _isInCover = true;
     }
@@ -155,8 +203,15 @@ public class PlayerCharacterController : MonoBehaviour
     void GettingOutFromCover()
     {
         //this gonna fix
-        transform.position = Vector3.Slerp(transform.position, transform.position + transform.forward*3f, Time.deltaTime * 3f);
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(Vector3.zero), Time.deltaTime * 3f);
+
+        //Debug.Log(transform.rotation.eulerAngles);
+
+
+        Vector3 test = transform.rotation.eulerAngles + new Vector3(0, 180, 0);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(test), Time.deltaTime * 3f);
+
+        transform.position = Vector3.Slerp(transform.position, transform.position + Vector3.back * 2, Time.deltaTime * 3f);
+
         _isInCover = false;
         _canTakeStandingCover = _canTakeCrouchCover = false;
         _playerAnimController.IsStandCovering = _playerAnimController.IsCrouchCovering = false;

@@ -368,6 +368,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -416,7 +417,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 85.045235
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -442,13 +443,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23203744, y: 0.29439554, z: -0.07391528, w: 0.92413557}
-  m_LocalPosition: {x: 5.2354107, y: 3.8446138, z: 0.45459363}
+  m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
+  m_LocalPosition: {x: 0, y: 1.5, z: -1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -493,6 +494,23 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3726616bcb386bb48af975c3fc2df1f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _followTarget: {fileID: 1463793558}
+  _followTargetYOffset: 1.5
+  _followTargetZOffset: -2
+  _pitchLimit: {x: -30, y: 60}
+  _rotationSpeed: 3
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -799,6 +817,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8718778828885884488, guid: e5f4daf24146ee040b5a2d7a73b30aa0, type: 3}
   m_PrefabInstance: {fileID: 242657175}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1463793558 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7532962840229712171, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
+  m_PrefabInstance: {fileID: 6296054269393890659}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1641451046 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8718778828885884488, guid: e5f4daf24146ee040b5a2d7a73b30aa0, type: 3}
@@ -1034,13 +1057,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4497505164128799569, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4757043067052638891, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
+      propertyPath: _verticalSpeed
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4757043067052638891, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
+      propertyPath: _horizontalSpeed
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4757043067052638891, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
+      propertyPath: _testAcceleration
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 7188208338514758545, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
       propertyPath: m_Name
       value: Y Bot
       objectReference: {fileID: 0}
     - target: {fileID: 7532962840229712171, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.45
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7532962840229712171, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1048,7 +1087,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7532962840229712171, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.238
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7532962840229712171, guid: c10ee571384974c4c87678f508e3d0e4, type: 3}
       propertyPath: m_LocalRotation.w

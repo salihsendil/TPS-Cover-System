@@ -4,6 +4,7 @@ public class PlayerAnimController : MonoBehaviour
 {
     [Header("References")]
     private IAnimState _currentState;
+    private PlayerCharacterController _playerCharacterController;
     private Animator _animator;
     private Rigidbody _rb;
 
@@ -15,7 +16,6 @@ public class PlayerAnimController : MonoBehaviour
     private int _velocityXHash;
     private int _velocityZHash;
 
-
     [Header("Player Current State Variables")]
     private bool _isWalking;
     private bool _isStandCovering;
@@ -23,7 +23,6 @@ public class PlayerAnimController : MonoBehaviour
     private bool _isMirrored;
     private float _velocityX;
     private float _velocityZ;
-
 
     [Header("Getter and Setters")]
     //Getters - Setters
@@ -45,6 +44,7 @@ public class PlayerAnimController : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _rb = GetComponent<Rigidbody>();
+        _playerCharacterController = GetComponent<PlayerCharacterController>();
         _isWalkingHash = Animator.StringToHash("isWalking");
         _isStandCoveringHash = Animator.StringToHash("isStandCovering");
         _isCrouchCoveringHash = Animator.StringToHash("isCrouchCovering");
@@ -62,6 +62,8 @@ public class PlayerAnimController : MonoBehaviour
     {
         _currentState.UpdateState(this);
 
+        _velocityX = Mathf.Clamp(Mathf.Lerp(_velocityX, InputManager.Instance.PlayerMovementVector.x, Time.deltaTime * 3f), -1, 1);
+        _velocityZ = Mathf.Clamp(Mathf.Lerp(_velocityZ, InputManager.Instance.PlayerMovementVector.z, Time.deltaTime * 3f), -1, 1);
         _animator.SetFloat(_velocityXHash, _velocityX);
         _animator.SetFloat(_velocityZHash, _velocityZ);
     }
